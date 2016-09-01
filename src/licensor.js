@@ -1,51 +1,43 @@
 'use strict';
 
-var fs = require('fs');
+var fs = require('fs'),
+    crypto = require('crypto');
 
-function Licensor(options) {
+function Licensor(secret) {
 
-    var self = this;
-
-    if (!options || typeof options !== "object" || !Object.keys(options).length) {
-        throw new Error("No options are provided!");
-    }
-
-    var fileCheck = function (path, str) {
-        if (!path) {
-            throw new Error("No " + str + " is specified!");
-        }
-        if (!fs.existsSync(path)) {
-            throw new Error(str + " doesn't exist!");
-        }
-        if (!fs.statSync(path).isFile()) {
-            throw new Error(str + " isn't a file!");
-        }
-    };
-
-    var privateKeyPath = options.privateKeyPath;
-    if (privateKeyPath && fileCheck(privateKeyPath)) {
-        self.privateKeyPath = privateKeyPath;
-    }
-
-    var publicKeyPath = options.publicKeyPath;
-    if (publicKeyPath && fileCheck(publicKeyPath)) {
-        self.publicKeyPath = publicKeyPath;
-    }
-
+    var self = this;     
+    
+    if( !secret ) {
+        throw new Error('No secret specified');
+    }       
+    
+    this.secret = secret;    
 }
 
 Licensor.prototype = {
-    privateKeyPath: null,
-    publicKeyPath: null,
+    secret: null,    
 
-    generateLicense: function(args, callback) {
+    generateLicense: function (args, callback) {
         var self = this;
-        args.license = 'blahblah';
-        callback(args);
+        var hmac = crypto.createHmac('sha256', this.secret);
+
+        var licenseText = JSON.stringify(args);
+
+        hmac.update(licenseText);
+        args.key = hmac.digest('hex');
+                
+        callback(args);        
     },
 
-    checkLicense: function(args, callback) {
-
+    verifyLicense: function (license, callback) {
+        var key = license.key;
+        delete license['key'];        
+        
+        this.generateLicense(license, function(testLicense) {            
+             var isMatch = (key == testLicense.key);
+             callback(isMatch);
+        })
+        
     }
 };
 
