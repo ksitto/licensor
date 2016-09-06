@@ -1,7 +1,7 @@
 var assert = require('assert')
 
 describe('Licensor', function() {
-    var Licensor = require('../src/licensor.js');
+    var Licensor = require('../licensor.js');
     var l = new Licensor('super secret'); 
     
     describe('#generateLicense', function() {
@@ -19,6 +19,21 @@ describe('Licensor', function() {
                     assert.equal(true, result);
                 })
             })
+        }),
+        it('should verify a license with a future expiration', function() {
+            l.generateLicense( { foo: 'bar', expiration: "2525-01-01" }, function( license ) {
+                l.verifyLicense(license, function(result) {
+                    assert.equal(true, result);
+                })
+            })
+        }),
+        it('should reject a license with a past expiration', function() {
+            l.generateLicense( { foo: 'bar', expiration: "2000-01-01" }, function( license ) {
+                l.verifyLicense(license, function(result) {
+                    assert.equal(false, result);
+                })
+            })
         })
-    })
+    })    
+
 })

@@ -1,7 +1,10 @@
+#! /usr/bin/env node
+
 'use strict';
 
 var fs = require('fs'),
-    crypto = require('crypto');
+    crypto = require('crypto'),
+    moment = require('moment');    
 
 function Licensor(secret) {
 
@@ -30,6 +33,15 @@ Licensor.prototype = {
     },
 
     verifyLicense: function (license, callback) {
+        
+        if(license.expiration) {            
+            var expiration = moment(license.expiration);            
+            if(expiration.isBefore(moment())) {                
+                callback(false);
+                return;
+            } 
+        }        
+
         var key = license.key;
         delete license['key'];        
         
