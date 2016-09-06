@@ -2,11 +2,12 @@
   "name": "licensor",
   "version": "0.0.1",
   "private": true,
+  "main": "licensor.js",
   "scripts": {    
     "test": "mocha ./test"
   },
   "dependencies": {
     "mocha": "3.0.2",
     "moment": "2.14.1"                
-  }
+  }  
 }
